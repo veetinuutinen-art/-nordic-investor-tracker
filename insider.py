@@ -3,11 +3,10 @@ import requests
 
 def get_insider_buys():
 
-    url = "https://www.nasdaqomxnordic.com/api/insidertrading"
+    url = "https://www.nasdaqomxnordic.com/"
 
     headers = {
-        "User-Agent": "Mozilla/5.0",
-        "Accept": "application/json"
+        "User-Agent": "Mozilla/5.0"
     }
 
     try:
@@ -17,21 +16,11 @@ def get_insider_buys():
             timeout=20
         )
 
-        print(r.text[:500])
+        print("INSIDER TEST STATUS:", r.status_code)
+        print(r.text[:300])
 
-        if r.status_code != 200:
-            return []
+        return []
 
-        data = r.json()
-
-        results = []
-
-        for item in data[:5]:
-            results.append(
-                f"🦅 {item}"
-            )
-
-        return results
-
-    except Exception:
+    except Exception as e:
+        print("INSIDER ERROR:", e)
         return []
