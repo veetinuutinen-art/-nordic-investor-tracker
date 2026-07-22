@@ -1,6 +1,6 @@
 import requests
-from datetime import datetime
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 from insider_database import (
     init_insider_db,
@@ -10,22 +10,30 @@ from insider_database import (
 
 
 COMPANIES = {
-    "Nokia": "https://www.nokia.com/about-us/investors/",
-    "Sampo": "https://www.sampo.com/investors/",
-    "Kone": "https://www.kone.com/en/investors/",
-    "Neste": "https://www.neste.com/investors",
-    "Fortum": "https://www.fortum.com/investors",
+    "Nokia": "https://www.nokia.com/about-us/news/releases/",
+    "Sampo": "https://www.sampo.com/media/releases/",
+    "Kone": "https://www.kone.com/en/news-and-releases/",
+    "Neste": "https://www.neste.com/news",
+    "Fortum": "https://www.fortum.com/media"
 
-    "Volvo": "https://www.volvogroup.com/en/investors.html",
-    "Investor AB": "https://www.investorab.com/investors/",
-    "Saab": "https://www.saab.com/investors",
+    ,
+    "Volvo": "https://www.volvogroup.com/en/news-and-media/news.html",
+    "Investor AB": "https://www.investorab.com/media/news/",
+    "Saab": "https://www.saab.com/news",
 
-    "Novo Nordisk": "https://www.novonordisk.com/investors.html",
-    "A.P. Moller - Maersk": "https://investor.maersk.com/",
-
-    "Equinor": "https://www.equinor.com/investors",
-    "DNB": "https://www.ir.dnb.no/"
+    "Novo Nordisk": "https://www.novonordisk.com/news-and-media/news-and-ir-materials.html",
+    "Equinor": "https://www.equinor.com/news"
 }
+
+
+KEYWORDS = [
+    "insider",
+    "manager transaction",
+    "purchase",
+    "buy",
+    "bought",
+    "acquisition"
+]
 
 
 def get_insider_buys():
@@ -33,15 +41,6 @@ def get_insider_buys():
     init_insider_db()
 
     alerts = []
-
-    keywords = [
-        "manager transaction",
-        "insider transaction",
-        "insider purchase",
-        "share purchase",
-        "purchased shares"
-    ]
-
 
     for company, url in COMPANIES.items():
 
@@ -59,47 +58,57 @@ def get_insider_buys():
                 "html.parser"
             )
 
-            text = soup.get_text(
-                " ",
-                strip=True
-            )
 
-            lower = text.lower()
+            headlines = []
 
-
-            found_word = None
-
-            for word in keywords:
-                if word in lower:
-                    found_word = word
-                    break
-
-
-            if found_word:
-
-                message = (
-                    f"{company}-{found_word}-"
-                    f"{datetime.now().strftime('%d.%m.%Y')}"
+            for h in soup.find_all(
+                ["h1", "h2", "h3", "a"]
+            ):
+                text = h.get_text(
+                    " ",
+                    strip=True
                 )
 
-
-                if already_seen(company, message):
-                    continue
-
-
-                save_seen(
-                    company,
-                    message
-                )
+                if text:
+                    headlines.append(text)
 
 
-                alerts.append(
-                    "🦅 SISÄPIIRI\n\n"
-                    f"Yhtiö: {company}\n"
-                    f"Havainto: {found_word}\n"
-                    f"Päivä: "
-                    f"{datetime.now().strftime('%d.%m.%Y')}"
-                )
+            for headline in headlines[:30]:
+
+                low = headline.lower()
+
+                for word in KEYWORDS:
+
+                    if word in low:
+
+                        alert_id = (
+                            f"{company}-"
+                            f"{headline}"
+                        )
+
+
+                        if already_seen(
+                            company,
+                            alert_id
+                        ):
+                            continue
+
+
+                        save_seen(
+                            company,
+                            alert_id
+                        )
+
+
+                        alerts.append(
+                            "🦅 SISÄPIIRIHAVAinto\n\n"
+                            f"Yhtiö: {company}\n"
+                            f"Otsikko: {headline}\n"
+                            f"Päivä: "
+                            f"{datetime.now().strftime('%d.%m.%Y')}"
+                        )
+
+                        break
 
 
         except Exception:
