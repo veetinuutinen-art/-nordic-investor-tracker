@@ -1,4 +1,4 @@
- import yfinance as yf
+import yfinance as yf
 from datetime import datetime
 from database import init_db, already_sent, save_alert
 
