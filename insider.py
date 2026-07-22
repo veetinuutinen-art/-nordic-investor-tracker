@@ -10,11 +10,25 @@ from insider_database import (
 
 
 COMPANIES = {
+    # 🇫🇮 Suomi
     "Nokia": "https://www.nokia.com/about-us/investors/",
     "Sampo": "https://www.sampo.com/investors/",
     "Kone": "https://www.kone.com/en/investors/",
     "Neste": "https://www.neste.com/investors",
-    "Fortum": "https://www.fortum.com/investors"
+    "Fortum": "https://www.fortum.com/investors",
+
+    # 🇸🇪 Ruotsi
+    "Volvo": "https://www.volvogroup.com/en/investors.html",
+    "Investor AB": "https://www.investorab.com/investors/",
+    "Saab": "https://www.saab.com/investors",
+
+    # 🇩🇰 Tanska
+    "Novo Nordisk": "https://www.novonordisk.com/investors.html",
+    "A.P. Moller - Maersk": "https://investor.maersk.com/",
+
+    # 🇳🇴 Norja
+    "Equinor": "https://www.equinor.com/investors",
+    "DNB": "https://www.ir.dnb.no/"
 }
 
 
@@ -28,8 +42,10 @@ def get_insider_buys():
         "manager transaction",
         "insider",
         "purchase",
-        "buy"
+        "buy",
+        "acquisition"
     ]
+
 
     for company, url in COMPANIES.items():
 
@@ -63,10 +79,16 @@ def get_insider_buys():
                         f"{datetime.now().strftime('%d.%m.%Y')}"
                     )
 
+
                     if already_seen(company, message):
                         break
 
-                    save_seen(company, message)
+
+                    save_seen(
+                        company,
+                        message
+                    )
+
 
                     alerts.append(
                         f"🦅 {company}\n"
