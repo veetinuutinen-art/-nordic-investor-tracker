@@ -1,6 +1,12 @@
 import requests
-from bs4 import BeautifulSoup
 from datetime import datetime
+from bs4 import BeautifulSoup
+
+from insider_database import (
+    init_insider_db,
+    already_seen,
+    save_seen
+)
 
 
 COMPANIES = {
@@ -14,14 +20,15 @@ COMPANIES = {
 
 def get_insider_buys():
 
+    init_insider_db()
+
     alerts = []
 
     keywords = [
         "manager transaction",
         "insider",
         "purchase",
-        "buy",
-        "acquisition"
+        "buy"
     ]
 
     for company, url in COMPANIES.items():
@@ -35,20 +42,40 @@ def get_insider_buys():
                 timeout=20
             )
 
-            text = r.text.lower()
+            soup = BeautifulSoup(
+                r.text,
+                "html.parser"
+            )
 
-            found = False
+            text = soup.get_text(
+                " ",
+                strip=True
+            ).lower()
+
 
             for word in keywords:
-                if word in text:
-                    found = True
 
-            if found:
-                alerts.append(
-                    f"🦅 {company}\n"
-                    f"Mahdollinen sisäpiiri-ilmoitus löytyi\n"
-                    f"{datetime.now().strftime('%d.%m.%Y')}"
-                )
+                if word in text:
+
+                    message = (
+                        f"{company} "
+                        f"{word} "
+                        f"{datetime.now().strftime('%d.%m.%Y')}"
+                    )
+
+                    if already_seen(company, message):
+                        break
+
+                    save_seen(company, message)
+
+                    alerts.append(
+                        f"🦅 {company}\n"
+                        f"Mahdollinen sisäpiiri-ilmoitus\n"
+                        f"Avainsana: {word}"
+                    )
+
+                    break
+
 
         except Exception:
             continue
