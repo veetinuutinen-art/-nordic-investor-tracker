@@ -1,5 +1,6 @@
 import os
 import requests
+
 from tracker import run_tracker
 from insider import get_insider_buys
 
@@ -32,7 +33,7 @@ try:
 
     if insider:
         messages.append(
-            "🦅 SISÄPIIRI\n\n"
+            "🦅 SISÄPIIRIOSTOT\n\n"
             + "\n".join(insider)
         )
 
@@ -41,6 +42,7 @@ try:
         send("\n\n".join(messages))
     else:
         send("✅ Ei uusia sijoitushavaintoja.")
+
 
 except Exception as e:
     send(f"❌ Tracker error:\n{e}")
