@@ -1,6 +1,8 @@
 import os
 import requests
 from tracker import run_tracker
+from insider import get_insider_buys
+
 
 BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
@@ -18,12 +20,27 @@ def send(msg):
 
 
 try:
-    result = run_tracker()
+    messages = []
 
-    if result:
-        send(result)
+    market = run_tracker()
+
+    if market:
+        messages.append(market)
+
+
+    insider = get_insider_buys()
+
+    if insider:
+        messages.append(
+            "🦅 SISÄPIIRI\n\n"
+            + "\n".join(insider)
+        )
+
+
+    if messages:
+        send("\n\n".join(messages))
     else:
-        send("✅ Nordic Investor Tracker: Ei uusia havaintoja.")
+        send("✅ Ei uusia sijoitushavaintoja.")
 
 except Exception as e:
     send(f"❌ Tracker error:\n{e}")
