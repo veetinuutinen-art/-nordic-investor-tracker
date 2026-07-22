@@ -1,45 +1,35 @@
 import os
-
+import json
 import requests
 
 BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
-message = """🚀 Nordic Investor Tracker
+URL = "https://www.inderes.fi/en/insider-transactions"
 
-Jos saat tämän viestin, kaikki toimii!
+def send_message(text):
+    requests.post(
+        f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+        data={
+            "chat_id": CHAT_ID,
+            "text": text
+        },
+        timeout=30
+    )
 
-Seuraavaksi alamme seurata:
+try:
+    r = requests.get(URL, timeout=30)
 
-🇫🇮 Suomi
+    if r.status_code == 200:
+        send_message(
+            "✅ Nordic Investor Tracker toimii!\n\n"
+            f"Inderes vastasi onnistuneesti ({r.status_code}).\n"
+            "Seuraavaksi lisätään varsinainen sisäpiiritapahtumien haku."
+        )
+    else:
+        send_message(
+            f"⚠️ Inderes vastasi koodilla {r.status_code}"
+        )
 
-🇸🇪 Ruotsi
-
-🇳🇴 Norja
-
-🇩🇰 Tanska
-
-Terveisin,
-
-Nordic Investor Tracker"""
-
-url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-
-response = requests.post(
-
-    url,
-
-    data={
-
-        "chat_id": CHAT_ID,
-
-        "text": message
-
-    },
-
-    timeout=30
-
-)
-
-print(response.text)
+except Exception as e:
+    send_message(f"❌ Virhe:\n{e}")
