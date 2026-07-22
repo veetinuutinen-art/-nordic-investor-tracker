@@ -1,13 +1,13 @@
 import requests
-from datetime import datetime
 
 
 def get_insider_buys():
 
-    url = "https://www.avanza.se/_api/insider-transactions"
+    url = "https://www.nasdaqomxnordic.com/api/insidertrading"
 
     headers = {
-        "User-Agent": "Mozilla/5.0"
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json"
     }
 
     try:
@@ -16,6 +16,8 @@ def get_insider_buys():
             headers=headers,
             timeout=20
         )
+
+        print(r.text[:500])
 
         if r.status_code != 200:
             return []
@@ -26,7 +28,7 @@ def get_insider_buys():
 
         for item in data[:5]:
             results.append(
-                f"{item}"
+                f"🦅 {item}"
             )
 
         return results
