@@ -14,9 +14,8 @@ COMPANIES = {
     "Sampo": "https://www.sampo.com/media/releases/",
     "Kone": "https://www.kone.com/en/news-and-releases/",
     "Neste": "https://www.neste.com/news",
-    "Fortum": "https://www.fortum.com/media"
+    "Fortum": "https://www.fortum.com/media",
 
-    ,
     "Volvo": "https://www.volvogroup.com/en/news-and-media/news.html",
     "Investor AB": "https://www.investorab.com/media/news/",
     "Saab": "https://www.saab.com/news",
@@ -27,12 +26,13 @@ COMPANIES = {
 
 
 KEYWORDS = [
-    "insider",
+    "insider transaction",
     "manager transaction",
-    "purchase",
-    "buy",
-    "bought",
-    "acquisition"
+    "person discharging managerial responsibilities",
+    "pdmr",
+    "board member purchase",
+    "ceo purchase",
+    "director purchase"
 ]
 
 
@@ -58,7 +58,6 @@ def get_insider_buys():
                 "html.parser"
             )
 
-
             headlines = []
 
             for h in soup.find_all(
@@ -73,19 +72,26 @@ def get_insider_buys():
                     headlines.append(text)
 
 
-            for headline in headlines[:30]:
+            for headline in headlines[:50]:
 
                 low = headline.lower()
+
+                # Poistetaan yhtiöiden omat takaisinostot
+                if (
+                    "buy-back" in low
+                    or "buyback" in low
+                    or "share buy-back" in low
+                ):
+                    continue
+
 
                 for word in KEYWORDS:
 
                     if word in low:
 
                         alert_id = (
-                            f"{company}-"
-                            f"{headline}"
+                            f"{company}-{headline}"
                         )
-
 
                         if already_seen(
                             company,
@@ -101,7 +107,7 @@ def get_insider_buys():
 
 
                         alerts.append(
-                            "🦅 SISÄPIIRIHAVAinto\n\n"
+                            "🦅 SISÄPIIRIKAUPPA\n\n"
                             f"Yhtiö: {company}\n"
                             f"Otsikko: {headline}\n"
                             f"Päivä: "
