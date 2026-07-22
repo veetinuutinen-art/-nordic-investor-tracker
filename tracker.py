@@ -1,59 +1,56 @@
-import requests
-from bs4 import BeautifulSoup
+import yfinance as yf
 from datetime import datetime
 
 
-WATCHLIST = [
-    "Nokia",
-    "Sampo",
-    "Kone",
-    "Neste",
-    "Fortum",
-    "Volvo",
-    "Investor",
-    "Saab",
-    "Novo Nordisk",
-]
-
-
-def fetch_transactions():
-
-    url = "https://www.nasdaqomxnordic.com/news/insidertrading"
-
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
-
-    r = requests.get(
-        url,
-        headers=headers,
-        timeout=30
-    )
-
-    soup = BeautifulSoup(
-        r.text,
-        "html.parser"
-    )
-
-    tables = soup.find_all("table")
-
-    return tables
+WATCHLIST = {
+    "Nokia": "NOKIA.HE",
+    "Sampo": "SAMPO.HE",
+    "Kone": "KNEBV.HE",
+    "Neste": "NESTE.HE",
+    "Fortum": "FORTUM.HE",
+    "Volvo": "VOLV-B.ST",
+    "Investor AB": "INVE-B.ST",
+    "Saab": "SAAB-B.ST",
+    "Novo Nordisk": "NOVO-B.CO"
+}
 
 
 def run_tracker():
 
-    tables = fetch_transactions()
+    alerts = []
 
-    if not tables:
-        return "⚠️ Ei löytynyt taulukoita."
+    for name, ticker in WATCHLIST.items():
 
-    now = datetime.now().strftime("%d.%m.%Y %H:%M")
+        try:
+            stock = yf.Ticker(ticker)
+            data = stock.history(period="2d")
 
-    msg = (
-        "📊 Nordic Investor Tracker\n\n"
-        f"⏱ Päivitys: {now}\n"
-        f"📄 Löytyi {len(tables)} datataulukkoa\n\n"
-        "Seuranta käynnissä."
-    )
+            if len(data) < 2:
+                continue
 
-    return msg
+            old = data["Close"].iloc[0]
+            new = data["Close"].iloc[-1]
+
+            change = ((new - old) / old) * 100
+
+            if abs(change) >= 2:
+                emoji = "📈" if change > 0 else "📉"
+
+                alerts.append(
+                    f"{emoji} {name}\n"
+                    f"{change:.2f}%\n"
+                    f"Hinta: {new:.2f}"
+                )
+
+        except Exception:
+            continue
+
+
+    if alerts:
+        return (
+            "📊 Nordic Investor Tracker\n\n"
+            + "\n\n".join(alerts)
+            + f"\n\n⏱ {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+        )
+
+    return None
