@@ -1,28 +1,45 @@
+import os
+
 import requests
-from bs4 import BeautifulSoup
-from datetime import datetime
 
-print("=" * 50)
-print("Nordic Investor Tracker")
-print("Käynnistyy:", datetime.now())
-print("=" * 50)
+BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 
-sources = [
-    {
-        "name": "Finansinspektionen Sweden",
-        "url": "https://www.fi.se"
+CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
+
+message = """🚀 Nordic Investor Tracker
+
+Jos saat tämän viestin, kaikki toimii!
+
+Seuraavaksi alamme seurata:
+
+🇫🇮 Suomi
+
+🇸🇪 Ruotsi
+
+🇳🇴 Norja
+
+🇩🇰 Tanska
+
+Terveisin,
+
+Nordic Investor Tracker"""
+
+url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+
+response = requests.post(
+
+    url,
+
+    data={
+
+        "chat_id": CHAT_ID,
+
+        "text": message
+
     },
-    {
-        "name": "Nasdaq Nordic",
-        "url": "https://www.nasdaq.com"
-    }
-]
 
-for source in sources:
-    try:
-        response = requests.get(source["url"], timeout=10)
-        print(f"✅ {source['name']} - OK ({response.status_code})")
-    except Exception as e:
-        print(f"❌ {source['name']} - {e}")
+    timeout=30
 
-print("\nTracker toimii.")
+)
+
+print(response.text)
